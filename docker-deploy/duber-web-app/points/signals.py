@@ -1,20 +1,35 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from ride.models import Ride
+from ride.models import Ride, RideShare
 from points.models import UserPoints, PointsTransaction
 
 @receiver(post_save, sender=Ride)
 def award_points(sender, instance, created, **kwargs):
-    if not created and instance.status == 'COMPLETED':  # 订单完成
-        user = instance.rider
+    if not created and instance.status == 'COMPLETED':  # Order completed
         distance = instance.distance
+        base_points = int(distance * 10)  # 10 points per mile
 
-        points_earned = int(distance * 10)  # 1 英里 = 10 积分
-        if instance.allow_sharing:
-            points_earned += 50  
+        # ✅ Give tokens to the main ride requester (rider)
+        if instance.rider:
+            rider_points, _ = UserPoints.objects.get_or_create(user=instance.rider)
+            rider_points.points += base_points
+            rider_points.save()
 
-        user_points, _ = UserPoints.objects.get_or_create(user=user)
-        user_points.points += points_earned
-        user_points.save()
+            PointsTransaction.objects.create(user=instance.rider, ride=instance, points=base_points, transaction_type='earn')
 
-        PointsTransaction.objects.create(user=user, ride=instance, points=points_earned, transaction_type='earn')
+        # ✅ Give tokens to the driver
+        if instance.driver and instance.driver.driver:
+            driver_points, _ = UserPoints.objects.get_or_create(user=instance.driver.driver)
+            driver_points.points += base_points
+            driver_points.save()
+
+            PointsTransaction.objects.create(user=instance.driver.driver, ride=instance, points=base_points, transaction_type='earn')
+
+        # ✅ Give tokens to all shared ride participants
+        sharers = RideShare.objects.filter(ride=instance)
+        for share in sharers:
+            sharer_points, _ = UserPoints.objects.get_or_create(user=share.rider)
+            sharer_points.points += base_points  # Or adjust based on shared distance
+            sharer_points.save()
+
+            PointsTransaction.objects.create(user=share.rider, ride=instance, points=base_points, transaction_type='earn')
