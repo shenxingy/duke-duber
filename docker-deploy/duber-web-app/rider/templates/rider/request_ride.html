@@ -123,6 +123,73 @@
 <script>
     let map, directionsService, directionsRenderer, pickupAutocomplete, dropoffAutocomplete;
     let estimatedMinutes = 0;  // Stores estimated travel time
+    let userMarker;
+    let userLocationButton;
+
+    function createLocationButton() {
+        userLocationButton = document.createElement("button");
+        userLocationButton.classList.add("custom-map-control-button", "btn", "btn-primary");
+        userLocationButton.innerHTML = '<i class="fas fa-location-arrow"></i>';
+        userLocationButton.title = "Get My Location";
+        userLocationButton.style.margin = "10px";
+        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(userLocationButton);
+        userLocationButton.addEventListener("click", getUserLocation);
+    }
+
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            userLocationButton.disabled = true;
+            userLocationButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    
+                    map.setCenter(userLocation);
+                    map.setZoom(15);
+
+                    if (userMarker) {
+                        userMarker.setPosition(userLocation);
+                    } else {
+                        userMarker = new google.maps.Marker({
+                            position: userLocation,
+                            map: map,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 10,
+                                fillColor: "#4285F4",
+                                fillOpacity: 1,
+                                strokeColor: "#FFFFFF",
+                                strokeWeight: 2,
+                            },
+                            title: "Your Location"
+                        });
+                    }
+
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ location: userLocation }, (results, status) => {
+                        if (status === "OK" && results[0]) {
+                            document.getElementById("id_pickup_location").value = results[0].formatted_address;
+                            updateMap();
+                        }
+                        userLocationButton.disabled = false;
+                        userLocationButton.innerHTML = '<i class="fas fa-location-arrow"></i>';
+                    });
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                    alert("Unable to get your location. Please enter your pickup location manually.");
+                    userLocationButton.disabled = false;
+                    userLocationButton.innerHTML = '<i class="fas fa-location-arrow"></i>';
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+    }
 
     function initMap() {
         map = new google.maps.Map(document.getElementById("map"), {
@@ -142,6 +209,9 @@
         // Update map when locations change
         pickupAutocomplete.addListener("place_changed", updateMap);
         dropoffAutocomplete.addListener("place_changed", updateMap);
+
+        createLocationButton();
+        getUserLocation(); // 初始化时自动获取位置
     }
 
     function updateMap() {
