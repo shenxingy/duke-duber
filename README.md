@@ -4,7 +4,7 @@
 - Real time location
 - Calculate the carbon emission that is reduced by the ride
 - token system
-- reward system: Add succulent and seed figure in the 
+- reward system: Add succulent (duke garden) tree seed (duke forest) and vegtables and fruits (duke farm) figure on the page.
 - Carmax API
 
 ### **Repository Description**  
