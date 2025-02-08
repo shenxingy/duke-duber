@@ -46,9 +46,15 @@
                                    class="form-control" required placeholder="Enter destination address">
                         </div>
 
+                        <button type="button" class="btn btn-info mb-3 w-100" id="getDistanceButton">
+                            <i class="fas fa-road me-1"></i>Calculate Travel Distance
+                        </button>
+
                         <button type="button" class="btn btn-info mb-3 w-100" id="getETAButton">
                             <i class="fas fa-clock me-1"></i>Calculate Travel Time
                         </button>
+                        
+                        
 
                         <div class="form-group mb-3">
                             <label for="required_arrival_time" class="form-label">
@@ -121,7 +127,7 @@
     function initMap() {
         map = new google.maps.Map(document.getElementById("map"), {
             zoom: 12,
-            center: { lat: 40.7128, lng: -74.0060 }, // Default center (New York)
+            center: { lat: 36.0015, lng: -78.9376 }, // Duke Chapel
         });
 
         directionsService = new google.maps.DirectionsService();
@@ -129,7 +135,7 @@
         directionsRenderer.setMap(map);
 
         // Autocomplete for locations
-        let options = { componentRestrictions: { country: "us" } }; // Restrict to US
+        let options = { componentRestrictions: { country: "us" } };
         pickupAutocomplete = new google.maps.places.Autocomplete(document.getElementById("id_pickup_location"), options);
         dropoffAutocomplete = new google.maps.places.Autocomplete(document.getElementById("id_dropoff_location"), options);
 
@@ -141,27 +147,69 @@
     function updateMap() {
         let pickup = document.getElementById("id_pickup_location").value;
         let dropoff = document.getElementById("id_dropoff_location").value;
-
         if (pickup && dropoff) {
-            calculateRoute(pickup, dropoff);  // Show route immediately when both are set
+            calculateRoute(pickup, dropoff);
         }
     }
 
     document.getElementById("getETAButton").addEventListener("click", function () {
         let pickup = document.getElementById("id_pickup_location").value;
         let dropoff = document.getElementById("id_dropoff_location").value;
-
         if (!pickup || !dropoff) {
             alert("Please enter both Pickup and Dropoff locations.");
             return;
         }
-
-        // Show loading state
         const button = document.getElementById("getETAButton");
         button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Calculating...';
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Calculating Time...';
 
-        // Fetch ETA from Backend
+        fetch("{% url 'get_eta' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({ "pickup_location": pickup, "dropoff_location": dropoff })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let match = data.estimated_time.match(/(\d+)\s*min/);
+                estimatedMinutes = match ? parseInt(match[1]) : 5;
+                document.getElementById("estimated_travel_time").value = estimatedMinutes;
+                setMinArrivalTime();
+                calculateRoute(pickup, dropoff);
+
+                button.innerHTML = `<i class="fas fa-clock me-1"></i>Est. Time: ${data.estimated_time}`;
+                button.classList.remove('btn-info');
+                button.classList.add('btn-success');
+            } else {
+                throw new Error(data.error || "Could not retrieve ETA");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Could not retrieve ETA. Please check your input and try again.");
+            button.innerHTML = '<i class="fas fa-clock me-1"></i>Calculate Travel Time';
+            button.classList.remove('btn-success');
+            button.classList.add('btn-info');
+        })
+        .finally(() => {
+            button.disabled = false;
+        });
+    });
+
+    document.getElementById("getDistanceButton").addEventListener("click", function () {
+        let pickup = document.getElementById("id_pickup_location").value;
+        let dropoff = document.getElementById("id_dropoff_location").value;
+        if (!pickup || !dropoff) {
+            alert("Please enter both Pickup and Dropoff locations.");
+            return;
+        }
+        const distanceButton = document.getElementById("getDistanceButton");
+        distanceButton.disabled = true;
+        distanceButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Calculating Distance...';
+
         fetch("{% url 'get_eta' %}", {
             method: "POST",
             headers: {
@@ -177,44 +225,22 @@
             return response.json();
         })
         .then(data => {
-            console.log("ETA Response:", data);
-            
             if (data.success) {
-                const estimatedTravelTime = document.getElementById("estimated_travel_time");
-                
-                if (!estimatedTravelTime) {
-                    throw new Error("Required elements not found");
-                }
-
-                // Update button with the estimated time
-                button.innerHTML = `<i class="fas fa-clock me-1"></i>Est. Time: ${data.estimated_time}`;
-                button.classList.remove('btn-info');
-                button.classList.add('btn-success');
-
-                // Extract minutes and update hidden field
-                let match = data.estimated_time.match(/(\d+)\s*min/);
-                estimatedMinutes = match ? parseInt(match[1]) : 5;
-                estimatedTravelTime.value = estimatedMinutes;
-
-                // Update required arrival time
-                setMinArrivalTime();
-
-                // Show route on the map
-                calculateRoute(pickup, dropoff);
+                distanceButton.innerHTML = `<i class="fas fa-road me-1"></i>Est. Distance: ${data.estimated_distance}`;
+                // 切换按钮样式为绿色
+                distanceButton.classList.remove('btn-info');
+                distanceButton.classList.add('btn-success');
             } else {
-                throw new Error(data.error || "Could not retrieve ETA");
+                throw new Error(data.error || "Could not retrieve estimated distance");
             }
         })
         .catch(error => {
             console.error("Error:", error);
-            alert("Could not retrieve ETA. Please check your input and try again.");
-            // Reset button to original state
-            button.innerHTML = '<i class="fas fa-clock me-1"></i>Calculate Travel Time';
-            button.classList.remove('btn-success');
-            button.classList.add('btn-info');
+            alert("Could not retrieve estimated distance. Please check your input and try again.");
+            distanceButton.innerHTML = '<i class="fas fa-road me-1"></i>Calculate Travel Distance';
         })
         .finally(() => {
-            button.disabled = false;
+            distanceButton.disabled = false;
         });
     });
 
@@ -245,7 +271,6 @@
         let selectedTime = new Date(this.value);
         let minTime = new Date();
         minTime.setMinutes(minTime.getMinutes() + estimatedMinutes + 1); // Ensure it's at least now + estimated time + 1 min
-
         if (selectedTime < minTime) {
             document.getElementById("arrivalError").style.display = "block";
             this.value = "";  // Reset the input field
@@ -258,17 +283,17 @@
         // Debug log for DOM elements
         console.log("DOM Elements Check:", {
             etaValue: document.getElementById("etaValue"),
-            etaDisplay: document.getElementById("etaDisplay"),
+            etaContainer: document.getElementById("etaContainer"),
             estimatedTravelTime: document.getElementById("estimated_travel_time"),
             getETAButton: document.getElementById("getETAButton")
         });
         
         // Verify the structure
-        const etaDisplay = document.getElementById("etaDisplay");
-        if (etaDisplay) {
-            console.log("ETA Display HTML:", etaDisplay.innerHTML);
+        const etaContainer = document.getElementById("etaContainer");
+        if (etaContainer) {
+            console.log("ETA Container HTML:", etaContainer.innerHTML);
         } else {
-            console.error("ETA Display element not found in DOM");
+            console.error("ETA Container element not found in DOM");
         }
     });
 </script>
