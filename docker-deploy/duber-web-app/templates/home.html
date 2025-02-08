@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-3">Welcome to Rideshare</h1>
+        {% if user.is_authenticated %}
+            <p class="lead text-muted mb-5">Welcome back, {{ user.username }}</p>
+            
+            <div class="row justify-content-center g-4">
+                <div class="col-md-5">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <div class="card-body text-center p-5">
+                            <i class="fas fa-car-side fa-3x text-primary mb-4"></i>
+                            <h3 class="card-title mb-4">Driver Mode</h3>
+                            <p class="card-text text-muted mb-4">Accepting ride requests and manage your trips</p>
+                            <a href="{% url 'driver_dashboard' %}" class="btn btn-lg btn-outline-primary w-100">
+                                <i class="fas fa-steering-wheel me-2"></i>Enter Driver Mode
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-5">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <div class="card-body text-center p-5">
+                            <i class="fas fa-user-friends fa-3x text-success mb-4"></i>
+                            <h3 class="card-title mb-4">Rider Mode</h3>
+                            <p class="card-text text-muted mb-4">Request rides and track your journey</p>
+                            <a href="{% url 'rider_dashboard' %}" class="btn btn-lg btn-outline-success w-100">
+                                <i class="fas fa-map-marker-alt me-2"></i>Enter Rider Mode
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <a href="{% url 'accounts:logout' %}" class="btn btn-link text-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                </a>
+            </div>
+        {% else %}
+            <p class="lead text-muted mb-5">Please sign in or create an account to continue</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'accounts:login' %}" class="btn btn-lg btn-outline-primary px-5">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-lg btn-outline-success px-5">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+
+    .btn-outline-primary, .btn-outline-success {
+        border-width: 2px;
+        padding: 0.8rem 1.5rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-outline-primary:hover, .btn-outline-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .25rem .5rem rgba(0,0,0,.1);
+    }
+
+    .btn-link {
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-link:hover {
+        opacity: 0.8;
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
