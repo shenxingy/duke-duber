@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user me-2"></i>Rider Dashboard</h2>
+        {% if not has_active_rides %}
+        <a href="{% url 'request_ride' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Request a Ride
+        </a>
+        {% endif %}
+    </div>
+
+    {# Active Rides Section - Show only if has_active_rides #}
+    {% if has_active_rides %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-route me-2"></i>Your Active Rides</h5>
+        </div>
+        <div class="card-body">
+            {% for ride in open_rides %}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <a href="{% url 'ride_detail' ride.id %}" class="text-decoration-none">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    {{ ride.pickup_location }}
+                                    <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                    {{ ride.dropoff_location }}
+                                </a>
+                            </h5>
+                            <p class="card-text">
+                                <span
+                                    class="badge {% if ride.status == 'PENDING' %}bg-warning{% else %}bg-info{% endif %} text-dark me-2">
+                                    {{ ride.status }}
+                                </span>
+                                <i class="fas fa-users me-1"></i> {{ ride.passenger_count }} passengers
+                                {% if ride.allow_sharing %}
+                                <span class="badge bg-success ms-2">Shared Ride</span>
+                                <br><i class="fas fa-users-cog me-1"></i> Total: {{ ride.total_passengers }} passengers
+                                {% endif %}
+                                <br>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i>
+                                    Requested: {{ ride.created_at|date:"M d, Y H:i" }}
+                                </small>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if ride.status == 'PENDING' %}
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{% url 'edit_ride' ride.id %}" class="btn btn-warning">
+                                    <i class="fas fa-edit me-1"></i>Modify Ride
+                                </a>
+                                <a href="{% url 'cancel_ride' ride.id %}" class="btn btn-danger">
+                                    <i class="fas fa-times me-1"></i>Cancel Ride
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if active_sharer_rides %}
+            {% for share in active_sharer_rides %}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <a href="{% url 'ride_detail' share.ride.id %}" class="text-decoration-none">
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    {{ share.pickup_location }}
+                                    <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                    {{ share.dropoff_location }}
+                                </a>
+                            </h5>
+                            <p class="card-text">
+                                <span
+                                    class="badge {% if share.status == 'PENDING' %}bg-warning{% else %}bg-info{% endif %} text-dark me-2">
+                                    SHARING: {{ share.status }}
+                                </span>
+                                <i class="fas fa-users me-1"></i> Your passengers: {{ share.passenger_count }}
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-car-side me-1"></i>
+                                    Main Ride: {{ share.ride.pickup_location }} → {{ share.ride.dropoff_location }}
+                                    <br>
+                                    <i class="far fa-clock me-1"></i>
+                                    Joined: {{ share.created_at|date:"M d, Y H:i" }}
+                                </small>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <form method="POST" action="{% url 'rider_dashboard' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="leave_ride_id" value="{{ share.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm mt-2">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Leave Ride
+                                </button>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        Ride ID: {{ share.ride.id }}<br>
+                                        Total Passengers: {{ share.ride.total_passengers }}
+                                    </small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# Search Section - Show only if NO active rides #}
+    {% if not has_active_rides %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-search me-2"></i>Search for Available Rides
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{% url 'rider_dashboard' %}" class="mb-4">
+                <input type="hidden" name="search" value="1">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt text-danger me-2"></i>Pickup Location
+                            </label>
+                            <input type="text" id="id_sharer_pickup" name="sharer_pickup" class="form-control"
+                                placeholder="Enter your pickup location">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-flag-checkered text-success me-2"></i>Dropoff Location
+                            </label>
+                            <input type="text" id="id_sharer_dropoff" name="sharer_dropoff" class="form-control"
+                                placeholder="Enter your destination">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-clock text-primary me-2"></i>Earliest Arrival
+                            </label>
+                            <input type="datetime-local" name="earliest_arrival" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-clock text-warning me-2"></i>Latest Arrival
+                            </label>
+                            <input type="datetime-local" name="latest_arrival" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-users text-info me-2"></i>Number of Passengers
+                            </label>
+                            <input type="number" name="passenger_count" class="form-control" min="1" value="1">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-info w-100">
+                            <i class="fas fa-search me-2"></i>Search Available Rides
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {% if search_performed %}
+            <div class="mt-4">
+                <h5 class="mb-3">
+                    <i class="fas fa-list-ul me-2"></i>Search Results
+                </h5>
+                {% if search_results %}
+                {% for ride in search_results %}
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">
+                                    <a href="{% url 'ride_detail' ride.id %}" class="text-decoration-none">
+                                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                        {{ ride.pickup_location }}
+                                        <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                        {{ ride.dropoff_location }}
+                                    </a>
+                                </h5>
+                                <p class="card-text">
+                                    <i class="far fa-clock me-2"></i>
+                                    Arrival: {{ ride.required_arrival_time|date:"M d, Y H:i" }}<br>
+                                    <i class="fas fa-users me-2"></i>
+                                    Current Passengers: {{ ride.total_passengers }}
+                                </p>
+                            </div>
+                            <form method="POST" action="{% url 'rider_dashboard' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="join_ride_id" value="{{ ride.id }}">
+                                <input type="hidden" name="sharer_pickup" value="{{ request.GET.sharer_pickup }}">
+                                <input type="hidden" name="sharer_dropoff" value="{{ request.GET.sharer_dropoff }}">
+                                <input type="hidden" name="passenger_count" value="{{ request.GET.passenger_count }}">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Join Ride
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-search-minus fa-3x mb-3"></i>
+                    <p>No rides found matching your criteria.</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# Ride History Section - Always visible #}
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-history me-2"></i>Ride History
+            </h5>
+        </div>
+        <div class="card-body">
+
+            {% if closed_rides or sharer_history %}
+            {% if closed_rides %}
+            <h5 class="mt-4"><i class="fas fa-history me-2"></i>Your Completed Rides</h5>
+            {% for ride in closed_rides %}
+            <a href="{% url 'ride_detail' ride.id %}" class="text-decoration-none text-reset">
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'ride_detail' ride.id %}" class="text-decoration-none">
+                                <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                {{ ride.pickup_location }}
+                                <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                {{ ride.dropoff_location }}
+                            </a>
+                        </h5>
+                        <p class="card-text">
+                            {% if ride.status == 'COMPLETED' %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Completed
+                            </span>
+                            {% elif ride.status == 'CANCELLED' %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times me-1"></i>Cancelled
+                            </span>
+                            {% endif %}
+                            <br>
+                            <i class="fas fa-users me-2"></i>{{ ride.passenger_count }} passengers
+                            {% if ride.allow_sharing %}
+                            <br><i class="fas fa-share-alt me-2"></i>Total: {{ ride.total_passengers }} passengers
+                            {% endif %}
+                            <br>
+                            <small class="text-muted">
+                                <i class="far fa-clock me-2"></i>
+                                {{ ride.created_at|date:"M d, Y H:i" }}
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% endif %}
+
+            {% if sharer_history %}
+            <h5 class="mt-4"><i class="fas fa-history me-2"></i>Your Shared Ride History</h5>
+            {% for share in sharer_history %}
+            <a href="{% url 'ride_detail' share.ride.id %}" class="text-decoration-none text-reset"> <!-- Fixed here -->
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'ride_detail' share.ride.id %}" class="text-decoration-none">
+                                <!-- And here -->
+                                <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                {{ share.ride.pickup_location }} <!-- Fixed ride reference -->
+                                <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                {{ share.ride.dropoff_location }} <!-- Fixed ride reference -->
+                            </a>
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge bg-danger">
+                                {{ share.get_status_display }}
+                            </span>
+                            <br><i class="fas fa-share-alt me-2"></i>Total: {{ share.ride.total_passengers }} passengers
+                            <br>
+                            <small class="text-muted">
+                                <i class="far fa-clock me-1"></i>
+                                Joined: {{ share.created_at|date:"M d, Y H:i" }}
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% endif %}
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-history fa-3x mb-3"></i>
+                <p>Your ride history will appear here.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function initAutocomplete() {
+        let pickupInput = document.getElementById("id_sharer_pickup");
+        let dropoffInput = document.getElementById("id_sharer_dropoff");
+
+        let pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput);
+        let dropoffAutocomplete = new google.maps.places.Autocomplete(dropoffInput);
+
+        // Bias results towards current location (optional)
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                let geolocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                let circle = new google.maps.Circle({
+                    center: geolocation,
+                    radius: position.coords.accuracy
+                });
+
+                pickupAutocomplete.setBounds(circle.getBounds());
+                dropoffAutocomplete.setBounds(circle.getBounds());
+            });
+        }
+    }
+</script>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initAutocomplete">
+    </script>
+{% endblock %}
