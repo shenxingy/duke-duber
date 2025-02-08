@@ -169,3 +169,65 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+# 忽略所有 __pycache__ 目录
+__pycache__/
+
+# 忽略 .pyc 和 .pyo 编译文件
+*.pyc
+*.pyo
+*.pyd
+
+# 如果使用了 virtualenv，也可以忽略
+venv/
+.env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env/
+venv/
+ENV/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.bak
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Database
+*.sql
+*.sqlite3
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Static files
+/static/
+/staticfiles/
+
+credentials.json
+token.json
