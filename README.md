@@ -1,5 +1,10 @@
 # Duke Duber
 
+### To do list
+** Real time location
+** token system
+** reward system
+
 ### **Repository Description**  
 `duke-duber` is a Django-based ride-sharing web application designed to promote sustainable and efficient transportation within the Duke University community. Users can register as **drivers** to accept ride requests or as **riders** to request or share rides. By facilitating shared travel, `duke-duber` helps reduce CO₂ emissions, ease campus traffic congestion, and contribute to Duke’s environmental initiatives.  
 
