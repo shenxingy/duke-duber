@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rideshare</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* 苹果风格字体设置 */
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: local('-apple-system'), local('BlinkMacSystemFont');
+            font-weight: 400;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 
+                        'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 
+                        'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: "kern";
+            text-rendering: optimizeLegibility;
+        }
+
+        /* 标题字体优化 */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        /* 卡片标题优化 */
+        .card-title {
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        /* 按钮文字优化 */
+        .btn {
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        /* 导航栏文字优化 */
+        .navbar-brand, .nav-link {
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        [data-bs-theme="dark"] {
+            color-scheme: dark;
+        }
+        
+        .theme-icon-active {
+            display: none;
+        }
+        
+        [data-bs-theme="dark"] .theme-icon-dark {
+            display: none;
+        }
+        
+        [data-bs-theme="dark"] .theme-icon-light {
+            display: inline-block;
+        }
+        
+        [data-bs-theme="light"] .theme-icon-light {
+            display: none;
+        }
+        
+        [data-bs-theme="light"] .theme-icon-dark {
+            display: inline-block;
+        }
+
+        /* 导航栏深色模式样式 */
+        [data-bs-theme="dark"] .navbar {
+            background-color: #212529 !important;
+        }
+
+        [data-bs-theme="dark"] .navbar-brand,
+        [data-bs-theme="dark"] .nav-link,
+        [data-bs-theme="dark"] .dropdown-toggle {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        [data-bs-theme="dark"] .nav-link:hover,
+        [data-bs-theme="dark"] .dropdown-toggle:hover {
+            color: #fff !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-menu {
+            background-color: #212529;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        [data-bs-theme="dark"] .dropdown-item {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        [data-bs-theme="dark"] .dropdown-item:hover {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        [data-bs-theme="dark"] .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        [data-bs-theme="dark"] .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.7%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-car me-2"></i>Rideshare</a>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-link nav-link px-3 me-2" id="theme-toggle">
+                    <i class="fas fa-sun theme-icon-light"></i>
+                    <i class="fas fa-moon theme-icon-dark"></i>
+                </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i>
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                    <i class="fas fa-id-card me-2"></i>Edit Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:change_password' %}">
+                                    <i class="fas fa-key me-2"></i>Change Password
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+    function showLoading() {
+        Swal.fire({
+            title: 'Processing...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
+    function showSuccess(message) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: message,
+            timer: 1500
+        });
+    }
+
+    function showError(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: message
+        });
+    }
+    </script>
+
+    <script>
+        // 主题切换功能
+        document.addEventListener('DOMContentLoaded', () => {
+            const getStoredTheme = () => localStorage.getItem('theme') || 'light';
+            const setStoredTheme = theme => localStorage.setItem('theme', theme);
+            
+            const getPreferredTheme = () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme) {
+                    return storedTheme;
+                }
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            };
+            
+            const setTheme = theme => {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                setStoredTheme(theme);
+            };
+            
+            // 初始化主题
+            setTheme(getPreferredTheme());
+            
+            // 主题切换按钮点击事件
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+            
+            // 监听系统主题变化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches }) => {
+                setTheme(matches ? 'dark' : 'light');
+            });
+        });
+    </script>
+</body>
+<script>
+    setTimeout(function() {
+        let alerts = document.querySelectorAll(".alert");
+        alerts.forEach(alert => alert.remove());
+    }, 1000);  // Remove after 1 seconds
+</script>
+</html>
