@@ -29,10 +29,25 @@ def get_estimated_time(pickup, dropoff):
     url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={pickup}&destinations={dropoff}&key={GOOGLE_MAPS_API_KEY}"
     response = requests.get(url)
     result = response.json()
-
     if result.get("status") == "OK":
         return result["rows"][0]["elements"][0]["duration"]["text"]
     return "Unknown ETA"
+
+def get_estimated_info(pickup, dropoff):
+    """Fetch estimated time and distance using Google Maps Distance Matrix API."""
+    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={pickup}&destinations={dropoff}&key={GOOGLE_MAPS_API_KEY}"
+    response = requests.get(url)
+    result = response.json()
+    if result.get("status") == "OK":
+        element = result["rows"][0]["elements"][0]
+        return {
+            "duration_text": element["duration"]["text"],
+            "distance_text": element["distance"]["text"]
+        }
+    return {
+        "duration_text": "Unknown ETA",
+        "distance_text": "Unknown Distance"
+    }
 
 def get_lat_lng(address):
     url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={GOOGLE_MAPS_API_KEY}"
@@ -108,32 +123,23 @@ def get_optimized_route(requester_pickup, requester_dropoff, sharer_pickup, shar
 
 @csrf_exempt
 def get_eta(request):
-    """API Endpoint to get estimated travel time via AJAX."""
+    """API endpoint to retrieve estimated travel time and distance."""
     if request.method == "POST":
         try:
-            # Handle JSON or Form Data
-            try:
-                data = json.loads(request.body)
-            except json.JSONDecodeError:
-                return JsonResponse({"success": False, "error": "Invalid JSON data."}, status=400)
-
+            data = json.loads(request.body)
             pickup = data.get("pickup_location")
             dropoff = data.get("dropoff_location")
-
             if not pickup or not dropoff:
                 return JsonResponse({"success": False, "error": "Invalid locations."}, status=400)
-
-            estimated_time = get_estimated_time(pickup, dropoff)
-
-            if estimated_time:
-                return JsonResponse({"success": True, "estimated_time": estimated_time})
-            else:
-                return JsonResponse({"success": False, "error": "Failed to retrieve ETA."}, status=500)
-
+            estimated_info = get_estimated_info(pickup, dropoff)
+            return JsonResponse({
+                "success": True,
+                "estimated_time": estimated_info["duration_text"],
+                "estimated_distance": estimated_info["distance_text"],
+            })
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=500)
-
-    return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
+    return JsonResponse({"success": False, "error": "Invalid method."}, status=405)
 
 @login_required
 def request_ride(request):
@@ -206,7 +212,7 @@ def cancel_ride(request, ride_id):
 
 @login_required
 def rider_dashboard(request):
-    # Owner’s rides:
+    # Owner's rides:
     open_rides = Ride.objects.filter(
         rider=request.user, status__in=['PENDING', 'CONFIRMED']
     ).order_by('-created_at')
