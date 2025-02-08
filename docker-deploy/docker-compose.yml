@@ -10,17 +10,17 @@ services:
       volumes:
         - postgres_data:/var/lib/postgresql/data
   web-init:
-      build: ./web-app
+      build: ./duber-web-app
       command: bash -c "chmod +x /code/initserver.sh && /code/initserver.sh"
       volumes:
-        - ./web-app:/code
+        - ./duber-web-app:/code
       depends_on:
         - db
   web:
-      build: ./web-app
+      build: ./duber-web-app
       command: bash -c "chmod +x /code/runserver.sh && /code/runserver.sh"
       volumes:
-        - ./web-app:/code
+        - ./duber-web-app:/code
       expose:
         - "8000"
       depends_on:
