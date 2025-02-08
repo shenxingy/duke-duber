@@ -1,8 +1,13 @@
 # Duke Duber
 
 ### **To do list**
-- Real time location
-- Calculate the carbon emission that is reduced by the ride
+- Real time location: 
+- Calculate the carbon emission that is reduced by the ride:
+  在创建新的 Ride 时，除了调用 Google API 预估行程时间（ETA）外，还能额外获取起点到终点的距离，同时保证原有的预估时间功能不受影响。
+一种实现方式是：
+新建或修改一个函数（例如 get_estimated_info），利用 Google Distance Matrix API 一次性获取时长与距离信息。
+修改 get_eta 的 API 接口，在返回 JSON 数据时，除了返回“estimated_time”，再加上一个“estimated_distance”的字段。
+前端 JS 部分也可以选择性地显示距离信息，但若没有使用这项新功能，原有流程依然能正常获得时长。
 - token system:
 目标是新增一种代币“叶绿素”，分发规则如下：
 • 每笔 ride 完成后，司机获得的叶绿素数量 = 里程数 × 2
