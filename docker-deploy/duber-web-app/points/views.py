@@ -22,7 +22,7 @@ def redeem_tree(request):
     else:
         messages.error(request, "Not enough points to redeem a tree.")
 
-    return redirect('my_points')
+    return redirect('points:my_points')
 
 @login_required
 def my_points(request):
