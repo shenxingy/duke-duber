@@ -138,7 +138,7 @@ def accept_ride(request, ride_id):
 
 from points.models import UserPoints, PointsTransaction
 
-TOKEN_RATE = 10  # ✅ 10 points per mile
+TOKEN_RATE = 1000  # ✅ 10 points per mile
 
 @login_required
 def finish_ride(request, ride_id):

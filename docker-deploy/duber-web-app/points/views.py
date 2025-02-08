@@ -28,8 +28,9 @@ def redeem_tree(request):
 def my_points(request):
     user_points, created = UserPoints.objects.get_or_create(user=request.user)
     transactions = PointsTransaction.objects.filter(user=request.user).order_by('-timestamp')
-
+    trees_planted = transactions.filter(transaction_type="redeem").count()
     return render(request, 'points/my_points.html', {
         'user_points': user_points,
-        'transactions': transactions
+        'transactions': transactions,
+        'trees_planted': trees_planted
     })
