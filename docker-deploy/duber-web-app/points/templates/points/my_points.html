@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Title & Back Button -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">
+            <i class="fas fa-leaf me-2 text-success"></i> My Points
+        </h2>
+        <a href="{% url 'rider_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Points Overview Card -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+            <h4 class="text-primary">Your Total Points</h4>
+            <h1 class="display-4 fw-bold text-success">
+                <i class="fas fa-coins me-2"></i> {{ user_points.points }}
+            </h1>
+            <p class="text-muted">Earn points by completing rides and carpooling!</p>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body">
+            <h4 class="text-primary">
+                <i class="fas fa-history me-2"></i> Transaction History
+            </h4>
+            {% if transactions %}
+                <ul class="list-group list-group-flush">
+                    {% for transaction in transactions %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ transaction.timestamp|date:"M d, Y H:i" }}</strong>
+                                <br>
+                                {% if transaction.transaction_type == "earn" %}
+                                    <span class="text-success"><i class="fas fa-plus-circle"></i> Earned</span>
+                                {% else %}
+                                    <span class="text-danger"><i class="fas fa-minus-circle"></i> Redeemed</span>
+                                {% endif %}
+                            </div>
+                            <span class="fw-bold {% if transaction.transaction_type == 'earn' %}text-success{% else %}text-danger{% endif %}">
+                                {{ transaction.points }} pts
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted"><i class="fas fa-info-circle"></i> No transactions yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Redeem Section -->
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body text-center">
+            <h4 class="text-primary">
+                <i class="fas fa-tree me-2 text-success"></i> Redeem Your Points
+            </h4>
+            <p class="text-muted">Use 1000 points to plant a tree in Duke Forest.</p>
+            
+            {% if user_points.points >= 1000 %}
+                <form action="{% url 'points:redeem_tree' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-hand-holding-heart me-2"></i> Plant a Tree (1000 pts)
+                    </button>
+                </form>
+            {% else %}
+                <button class="btn btn-outline-secondary btn-lg" disabled>
+                    <i class="fas fa-lock me-2"></i> Need 1000 pts to Redeem
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+</div> <!-- /.container -->
+{% endblock %}

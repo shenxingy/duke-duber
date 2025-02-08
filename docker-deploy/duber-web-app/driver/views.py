@@ -12,8 +12,30 @@ from utils.gmail_service import send_email
 from django.views.generic.detail import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 import logging
+import requests
+import os
+from dotenv import load_dotenv
+from rider.models import Ride, RideShare
+
+# Load environment variables
+load_dotenv()
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 logger = logging.getLogger(__name__)
+def fetch_distance_from_google_maps(pickup, dropoff):
+    """Fetch distance (in miles) using Google Maps Distance Matrix API."""
+    GOOGLE_MAPS_API_KEY = settings.GOOGLE_MAPS_API_KEY
+    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={pickup}&destinations={dropoff}&key={GOOGLE_MAPS_API_KEY}"
+    
+    response = requests.get(url)
+    data = response.json()
+    
+    if data.get("status") == "OK":
+        distance_meters = data["rows"][0]["elements"][0]["distance"]["value"]  # Distance in meters
+        distance_miles = distance_meters / 1609.34  # Convert meters to miles
+        return round(distance_miles, 2)
+    
+    return 0.0  # Default if API call fails
 
 @login_required
 def driver_dashboard(request):
@@ -69,9 +91,11 @@ def accept_ride(request, ride_id):
 
         # 判断载客量是否足够
         if total_passengers <= driver_profile.max_passengers:
+            ride.distance = fetch_distance_from_google_maps(ride.pickup_location, ride.dropoff_location)
             # **这里改为给 ride.driver 赋值，而非 ride.vehicle**
             ride.driver = driver_profile  
             ride.status = 'CONFIRMED'
+            ride.shared_rides.update(status='CONFIRMED')
             ride.save()
             
             # 发送邮件通知
@@ -112,19 +136,54 @@ def accept_ride(request, ride_id):
     
     return redirect('driver_dashboard')
 
+from points.models import UserPoints, PointsTransaction
+
+TOKEN_RATE = 10  # ✅ 10 points per mile
+
 @login_required
 def finish_ride(request, ride_id):
     try:
         vehicle = Driver.objects.get(driver=request.user)
         ride = get_object_or_404(Ride, id=ride_id, status='CONFIRMED', driver=vehicle)
+        
+        # ✅ Update ride status
         ride.status = 'COMPLETED'
+        ride.shared_rides.update(status='COMPLETED')
         ride.save()
-        # messages.success(request, 'Ride completed successfully!')
+
+        # ✅ Award tokens to the rider
+        base_points = int(ride.distance * TOKEN_RATE)
+        if ride.rider:
+            rider_points, _ = UserPoints.objects.get_or_create(user=ride.rider)
+            rider_points.points += base_points
+            rider_points.save()
+
+            PointsTransaction.objects.create(user=ride.rider, ride=ride, points=base_points, transaction_type='earn')
+
+        # ✅ Award tokens to the driver
+        if ride.driver and ride.driver.driver:
+            driver_points, _ = UserPoints.objects.get_or_create(user=ride.driver.driver)
+            driver_points.points += base_points
+            driver_points.save()
+
+            PointsTransaction.objects.create(user=ride.driver.driver, ride=ride, points=base_points, transaction_type='earn')
+
+        # ✅ Award tokens to ride sharers (based on their individual distance)
+        sharers = RideShare.objects.filter(ride=ride)
+        for share in sharers:
+            sharer_distance = fetch_distance_from_google_maps(share.pickup_location, share.dropoff_location)
+            sharer_points = int(sharer_distance * TOKEN_RATE)
+
+            sharer_user_points, _ = UserPoints.objects.get_or_create(user=share.rider)
+            sharer_user_points.points += sharer_points
+            sharer_user_points.save()
+
+            PointsTransaction.objects.create(user=share.rider, ride=ride, points=sharer_points, transaction_type='earn')
+
+        messages.success(request, f'Ride completed! Tokens awarded based on {ride.distance} miles.')
+
     except Driver.DoesNotExist:
         print("vehicle not found")
-    #     messages.error(request, 'Vehicle not found!')
-    # except Ride.DoesNotExist:
-        # messages.error(request, 'Ride not found!')
     
     return redirect('driver_dashboard')
 
