@@ -1,0 +1,44 @@
+version: '2'
+
+services:
+  db:
+      image: postgres
+      environment:
+        - POSTGRES_DB=postgres
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+  web-init:
+      build: ./web-app
+      command: bash -c "chmod +x /code/initserver.sh && /code/initserver.sh"
+      volumes:
+        - ./web-app:/code
+      depends_on:
+        - db
+  web:
+      build: ./web-app
+      command: bash -c "chmod +x /code/runserver.sh && /code/runserver.sh"
+      volumes:
+        - ./web-app:/code
+      expose:
+        - "8000"
+      depends_on:
+        - web-init
+      networks:
+        - default
+      dns:
+        - 8.8.8.8
+        - 8.8.4.4
+      extra_hosts:
+        - "smtp.gmail.com:74.125.133.109"
+  nginx:
+     image: nginx:latest
+     ports:
+       - "8000:8000"
+     volumes:
+       - ./nginx/config:/etc/nginx/conf.d
+     depends_on:
+       - web
+volumes:
+  postgres_data:
