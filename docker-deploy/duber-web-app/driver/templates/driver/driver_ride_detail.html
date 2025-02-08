@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- 返回按钮 + 标题栏 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">
+            <i class="fas fa-car me-2"></i> Ride Details
+        </h2>
+        <a href="{% url 'driver_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <!-- 顶部的两列：左列 = Pickup/Dropoff，右列 = 订单详情 -->
+            <div class="row">
+                <!-- 左侧 Pickup/Dropoff -->
+                <div class="col-md-6 border-end">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>Pickup Location
+                    </h5>
+                    <p class="fs-5">{{ ride.pickup_location }}</p>
+
+                    <h5 class="text-primary mt-4 mb-3">
+                        <i class="fas fa-flag-checkered me-2"></i>Dropoff Location
+                    </h5>
+                    <p class="fs-5">{{ ride.dropoff_location }}</p>
+                </div>
+
+                <!-- 右侧 订单详情 -->
+                <div class="col-md-6 ps-4">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-info-circle me-2"></i> Details
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>Status:</strong>
+                            {% if ride.status == "CONFIRMED" %}
+                                <span class="badge bg-success">{{ ride.get_status_display }}</span>
+                            {% elif ride.status == "COMPLETED" %}
+                                <span class="badge bg-secondary">{{ ride.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">{{ ride.get_status_display }}</span>
+                            {% endif %}
+                        </li>
+                        <li class="mb-2"><strong>Passengers:</strong> {{ ride.total_passengers }}</li>
+                        <li class="mb-2"><strong>Requested Arrival:</strong> {{ ride.required_arrival_time|date:"M d, Y H:i" }}</li>
+                        <li class="mb-3"><strong>Special Requests:</strong> {{ ride.special_request|default:"None" }}</li>
+                        
+                        <!-- 如果已分配司机，展示司机和车辆信息，否则提示 "No driver assigned yet" -->
+                        {% if ride.driver %}
+                            <hr class="my-2">
+                            <h6 class="text-primary mt-3"><i class="fas fa-user-tie me-1"></i> Assigned Driver</h6>
+                            <li class="mb-2"><strong>Name:</strong> {{ ride.driver.driver.username }}</li>
+                            <li class="mb-2"><strong>Vehicle Type:</strong> {{ ride.driver.type }}</li>
+                            <li class="mb-2"><strong>Plate Number:</strong> {{ ride.driver.plate_number }}</li>
+                            <li class="mb-2"><strong>Max Passengers:</strong> {{ ride.driver.max_passengers }}</li>
+                            <li class="mb-2"><strong>Special Info:</strong> {{ ride.driver.special_info|default:"None" }}</li>
+                        {% else %}
+                            <p class="text-muted"><em>No driver assigned yet.</em></p>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sharing Participants 区域，单独放在下面一行 -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-users me-2"></i> Sharing Participants
+                    </h5>
+                    {% if ride.shared_rides.all %}
+                        <div class="list-group">
+                            {% for share in ride.shared_rides.all %}
+                                <div class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-user me-2 text-info"></i>
+                                    <span>
+                                        {{ share.rider.username }} 
+                                        ({{ share.passenger_count }} passenger{{ share.passenger_count|pluralize }})
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            No sharing participants
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div> <!-- /.card-body -->
+    </div> <!-- /.card -->
+</div> <!-- /.container -->
+{% endblock %}

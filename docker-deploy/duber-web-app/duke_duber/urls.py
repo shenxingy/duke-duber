@@ -1,5 +1,5 @@
 """
-URL configuration for duke_duber project.
+URL configuration for rideshare_project project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
@@ -15,8 +15,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.shortcuts import render
+from utils.views import oauth2_callback, start_oauth_flow
+
+def home(request):
+    return render(request, 'home.html')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('accounts.urls')),
+    path('driver/', include('driver.urls')),
+    path('rider/', include('rider.urls')),
+    path('', home, name='home'),
+    path('oauth2callback/', oauth2_callback, name='oauth2_callback'),
+    path('start-oauth/', start_oauth_flow, name='start_oauth'),
 ]
