@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-taxi me-2"></i>Driver Dashboard</h2>
+        {% if not vehicle %}
+        <a href="{% url 'vehicle_registration' %}" class="btn btn-primary">
+            <i class="fas fa-car-side me-1"></i>Register Vehicle
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Your Vehicle Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-car me-2 text-primary"></i>
+                            <strong>Type:</strong> {{ vehicle.type }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-id-card me-2 text-primary"></i>
+                            <strong>Plate Number:</strong> {{ vehicle.plate_number }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            <strong>Max Passengers:</strong> {{ vehicle.max_passengers }}
+                        </li>
+                        {% if vehicle.special_info %}
+                        <li class="mb-2">
+                            <i class="fas fa-clipboard-list me-2 text-primary"></i>
+                            <strong>Special Info:</strong> {{ vehicle.special_info }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="{% url 'update_vehicle' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i>Update Vehicle Info
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-route me-2"></i>Your Active Rides</h5>
+        </div>
+        <div class="card-body">
+            {% if my_rides %}
+            {% for ride in my_rides %}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">
+                                <a href="{% url 'driver_ride_detail' ride.id %}" class="text-decoration-none">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    {{ ride.pickup_location }}
+                                    <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                    {{ ride.dropoff_location }}
+                                </a>
+                            </h5>
+                            <p class="card-text">
+                                <span
+                                    class="badge {% if ride.status == 'CONFIRMED' %}bg-info{% else %}bg-warning{% endif %} me-2">
+                                    {{ ride.status }}
+                                </span>
+                                <i class="fas fa-users me-1"></i> {{ ride.passenger_count }} passengers<br>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i>
+                                    Requested: {{ ride.created_at|date:"M d, Y H:i" }}
+                                </small>
+                            </p>
+                        </div>
+                        {% if ride.status == 'CONFIRMED' %}
+                        <form method="post" action="{% url 'finish_ride' ride.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check me-1"></i>Complete Ride
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-car-side fa-3x mb-3"></i>
+                <p>No active rides at the moment.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if not my_rides %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Available Ride Requests</h5>
+        </div>
+        <div class="card-body">
+            {% if pending_rides %}
+            {% for ride in pending_rides %}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <a href="{% url 'driver_ride_detail' ride.id %}" class="text-decoration-none">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    {{ ride.pickup_location }}
+                                    <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                    {{ ride.dropoff_location }}
+                                </a>
+                            </h5>
+                            <p class="card-text">
+                                <i class="fas fa-users me-1"></i> {{ ride.passenger_count }} passengers<br>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i>
+                                    Requested: {{ ride.created_at|date:"M d, Y H:i" }}
+                                </small>
+                                {% if ride.special_request %}
+                                <br>
+                                <i class="fas fa-info-circle me-1 text-info"></i>
+                                {{ ride.special_request }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <form method="post" action="{% url 'accept_ride' ride.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check me-1"></i>Accept Ride
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                <p>No pending ride requests available.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card mt-3 mb-4 shadow-sm">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-history me-2"></i>Ride History
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if ride_history %}
+            {% for ride in ride_history %}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'driver_ride_detail' ride.id %}" class="text-decoration-none">
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            {{ ride.pickup_location }}
+                            <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                            {{ ride.dropoff_location }}
+                        </a>
+                    </h5>
+                    <p class="card-text">
+                        <span class="badge bg-secondary me-2">{{ ride.status }}</span>
+                        <i class="fas fa-users me-1"></i> {{ ride.passenger_count }} passengers<br>
+                        <small class="text-muted">
+                            <i class="far fa-clock me-1"></i>
+                            Completed on:
+                            {{ ride.updated_at|date:"M d, Y H:i" }}
+                        </small>
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-history fa-3x mb-3"></i>
+                <p>No completed rides yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
