@@ -1,11 +1,11 @@
 # Duke Duber
 
 ### **To do list**
-- ** Real time location
-- ** Calculate the carbon emission that is reduced by the ride
-- ** token system
-- ** reward system: Add succulent and seed figure in the 
-- ** Carmax API
+- Real time location
+- Calculate the carbon emission that is reduced by the ride
+- token system
+- reward system: Add succulent and seed figure in the 
+- Carmax API
 
 ### **Repository Description**  
 `duke-duber` is a Django-based ride-sharing web application designed to promote sustainable and efficient transportation within the Duke University community. Users can register as **drivers** to accept ride requests or as **riders** to request or share rides. By facilitating shared travel, `duke-duber` helps reduce CO₂ emissions, ease campus traffic congestion, and contribute to Duke’s environmental initiatives.  
