@@ -72,6 +72,7 @@ def accept_ride(request, ride_id):
             # **这里改为给 ride.driver 赋值，而非 ride.vehicle**
             ride.driver = driver_profile  
             ride.status = 'CONFIRMED'
+            ride.shared_rides.update(status='CONFIRMED')
             ride.save()
             
             # 发送邮件通知
@@ -118,6 +119,7 @@ def finish_ride(request, ride_id):
         vehicle = Driver.objects.get(driver=request.user)
         ride = get_object_or_404(Ride, id=ride_id, status='CONFIRMED', driver=vehicle)
         ride.status = 'COMPLETED'
+        ride.shared_rides.update(status='COMPLETED')
         ride.save()
         # messages.success(request, 'Ride completed successfully!')
     except Driver.DoesNotExist:
