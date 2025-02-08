@@ -1,6 +1,6 @@
 # Duke Duber
 
-### To do list
+### **To do list**
 - ** Real time location
 - ** Calculate the carbon emission that is reduced by the ride
 - ** token system
