@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'accounts',
     'driver',
     'rider',
+    'points',
     'crispy_forms',
     'crispy_bootstrap5',
 ]

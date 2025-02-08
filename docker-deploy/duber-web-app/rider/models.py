@@ -25,7 +25,7 @@ class Ride(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True, blank=True, related_name="rides_driven")
-
+    distance = models.FloatField(default=0.0) 
     def __str__(self):
         return f"Ride from {self.pickup_location} to {self.dropoff_location}"
 

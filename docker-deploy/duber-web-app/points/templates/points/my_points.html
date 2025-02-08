@@ -1,0 +1,15 @@
+<h2>My Points</h2>
+<p>You have <strong>{{ user_points.points }}</strong> points.</p>
+
+<h3>Transaction History</h3>
+<ul>
+    {% for transaction in transactions %}
+        <li>{{ transaction.timestamp }} - {{ transaction.transaction_type }} {{ transaction.points }} points</li>
+    {% endfor %}
+</ul>
+
+<h3>Redeem a Tree</h3>
+<form action="{% url 'redeem_tree' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Plant a Tree (1000 points)</button>
+</form>

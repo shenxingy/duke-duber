@@ -30,4 +30,5 @@ urlpatterns = [
     path('', home, name='home'),
     path('oauth2callback/', oauth2_callback, name='oauth2_callback'),
     path('start-oauth/', start_oauth_flow, name='start_oauth'),
+    path('points/', include('points.urls', namespace="points")),
 ]
