@@ -138,7 +138,7 @@ def accept_ride(request, ride_id):
 
 from points.models import UserPoints, PointsTransaction
 
-TOKEN_RATE = 10  # ✅ 10 points per mile
+TOKEN_RATE = 1000  # ✅ 10 points per mile
 
 @login_required
 def finish_ride(request, ride_id):
@@ -150,23 +150,36 @@ def finish_ride(request, ride_id):
         ride.status = 'COMPLETED'
         ride.shared_rides.update(status='COMPLETED')
         ride.save()
+        sharers = RideShare.objects.filter(ride=ride)
+        
+        # ✅ Award tokens to the driver
+        driver_distance = 0
 
+        if not sharers:
+            driver_distance = ride.distance
+        else:
+            driver_distance = max(
+                fetch_distance_from_google_maps(ride.pickup_location, share.dropoff_location) 
+                for share in sharers
+            )
+            driver_distance = max(driver_distance, ride.distance)
+        
+        driver_points = int(driver_distance * TOKEN_RATE)
+        driver_user_points, _ = UserPoints.objects.get_or_create(user=ride.driver.driver)
+        driver_user_points.points += driver_points
+        driver_user_points.total_points_earned += driver_points
+        driver_user_points.save()
+        PointsTransaction.objects.create(user=ride.driver.driver, ride=ride, points=driver_points, transaction_type='earn')
+        
         # ✅ Award tokens to the rider
         base_points = int(ride.distance * TOKEN_RATE)
         if ride.rider:
             rider_points, _ = UserPoints.objects.get_or_create(user=ride.rider)
             rider_points.points += base_points
+            rider_points.total_points_earned += base_points
             rider_points.save()
 
             PointsTransaction.objects.create(user=ride.rider, ride=ride, points=base_points, transaction_type='earn')
-
-        # ✅ Award tokens to the driver
-        if ride.driver and ride.driver.driver:
-            driver_points, _ = UserPoints.objects.get_or_create(user=ride.driver.driver)
-            driver_points.points += base_points
-            driver_points.save()
-
-            PointsTransaction.objects.create(user=ride.driver.driver, ride=ride, points=base_points, transaction_type='earn')
 
         # ✅ Award tokens to ride sharers (based on their individual distance)
         sharers = RideShare.objects.filter(ride=ride)
@@ -176,6 +189,7 @@ def finish_ride(request, ride_id):
 
             sharer_user_points, _ = UserPoints.objects.get_or_create(user=share.rider)
             sharer_user_points.points += sharer_points
+            rider_points_obj.total_points_earned += base_points
             sharer_user_points.save()
 
             PointsTransaction.objects.create(user=share.rider, ride=ride, points=sharer_points, transaction_type='earn')
