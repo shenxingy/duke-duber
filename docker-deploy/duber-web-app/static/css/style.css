@@ -119,3 +119,24 @@ body {
 .list-group-item {
     transition: background-color 0.2s ease;
 }
+
+#welcome-text {
+    white-space: nowrap;
+    overflow: visible;
+    display: inline-block;
+}
+
+.typing-cursor {
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background-color: #0d6efd;
+    margin-left: 2px;
+    vertical-align: text-top;
+    animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
