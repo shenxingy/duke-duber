@@ -45,97 +45,106 @@
         </div>
     </div>
 
-    <!-- Trees You Planted -->
-    {% if trees_planted > 0 %}
+    {% if succulents_redeemed or produce_redeemed or trees_planted %}
     <div class="card shadow-sm border-0 mt-4">
         <div class="card-body text-center">
-            <h4 class="text-success">
-                <i class="fas fa-tree me-2"></i> Trees You Planted
-            </h4>
-            <h1 class="display-4 fw-bold text-success">
-                {{ trees_planted }}
-            </h1>
-            <p class="text-muted">Thanks for making Duke Forest greener! 🌱</p>
+            <h4 class="text-success mb-4">Items You Redeemed</h4>
+    
+            <div class="row">
+                <!-- Succulents -->
+                <div class="col-md-4 mb-3">
+                    <i class="fas fa-seedling me-1"></i>
+                    <strong>Succulents:</strong>
+                    <span class="fw-bold">{{ succulents_redeemed }}</span>
+                </div>
+    
+                <!-- Produce -->
+                <div class="col-md-4 mb-3">
+                    <i class="fas fa-carrot me-1"></i>
+                    <strong>Produce:</strong>
+                    <span class="fw-bold">{{ produce_redeemed }}</span>
+                </div>
+                
+                <!-- Trees -->
+                <div class="col-md-4 mb-3">
+                    <i class="fas fa-tree me-1"></i>
+                    <strong>Trees Planted:</strong>
+                    <span class="fw-bold">{{ trees_planted }}</span>
+                </div>
+                    
+            </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Redeem a Tree Section -->
-    <div class="card shadow-sm border-0 mt-4">
-        <div class="card-body text-center">
-            <h4 class="text-primary mb-4">
-                <i class="fas fa-leaf me-2 text-success"></i> Redeem Your Points
-            </h4>
-            
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <!-- Succulent Option -->
-                    <div class="mb-4">
-                        <div class="text-center mb-3">
-                            <i class="fas fa-seedling text-success" style="font-size: 2.5rem;"></i>
-                        </div>
-                        <p class="text-muted">Use 300 points to get a succulent from Duke Garden.</p>
-                        {% if user_points.points >= 300 %}
-                            <form action="{% url 'points:redeem_succulent' %}" method="post" class="mb-3">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success btn-lg">
-                                    <i class="fas fa-seedling me-2"></i> Get a Succulent (300 pts)
-                                </button>
-                            </form>
-                        {% else %}
-                            <button class="btn btn-outline-secondary btn-lg mb-3" disabled>
-                                <i class="fas fa-lock me-2"></i> Need 300 pts to Redeem
-                            </button>
-                        {% endif %}
-                    </div>
-
-                    <hr class="my-4">
-                    
-                    <!-- Produce Option -->
-                    <div class="mb-4">
-                        <div class="text-center mb-3">
-                            <i class="fas fa-carrot text-warning" style="font-size: 2.5rem;"></i>
-                        </div>
-                        <p class="text-muted">Use 500 points to get fresh produce from Duke Farm.</p>
-                        {% if user_points.points >= 500 %}
-                            <form action="{% url 'points:redeem_produce' %}" method="post" class="mb-3">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-warning btn-lg">
-                                    <i class="fas fa-carrot me-2"></i> Get Fresh Produce (500 pts)
-                                </button>
-                            </form>
-                        {% else %}
-                            <button class="btn btn-outline-secondary btn-lg mb-3" disabled>
-                                <i class="fas fa-lock me-2"></i> Need 500 pts to Redeem
-                            </button>
-                        {% endif %}
-                    </div>
-
-                    <hr class="my-4">
-                    
-                    <!-- Tree Option -->
-                    <div class="mb-4">
-                        <div class="text-center mb-3">
-                            <i class="fas fa-tree" style="font-size: 2.5rem; color: #8B4513;"></i>
-                        </div>
-                        <p class="text-muted">Use 1000 points to plant a tree in Duke Forest.</p>
-                        {% if user_points.points >= 1000 %}
-                            <form action="{% url 'points:redeem_tree' %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-lg" style="background-color: #8B4513; color: white;">
-                                    <i class="fas fa-tree me-2"></i> Plant a Tree (1000 pts)
-                                </button>
-                            </form>
-                        {% else %}
-                            <button class="btn btn-outline-secondary btn-lg" disabled>
-                                <i class="fas fa-lock me-2"></i> Need 1000 pts to Redeem
-                            </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+<!-- Redeem Your Points Section -->
+<div class="card shadow-sm border-0 mt-4">
+    <div class="card-body">
+      <h4 class="text-primary text-center mb-4">
+        <i class="fas fa-leaf me-2 text-success"></i> Redeem Your Points
+      </h4>
+  
+      <!-- 3 columns in a row -->
+      <div class="row text-center">
+  
+        <!-- Succulent Column -->
+        <div class="col-md-4 mb-4">
+          <i class="fas fa-seedling text-success mb-2" style="font-size: 2.5rem;"></i>
+          <p class="text-muted">Use 300 points to get a succulent from Duke Garden.</p>
+          {% if user_points.points >= 300 %}
+            <form action="{% url 'points:redeem_succulent' %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-seedling me-2"></i> Get a Succulent (300 pts)
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-outline-secondary btn-lg" disabled>
+              <i class="fas fa-lock me-2"></i> Need 300 pts
+            </button>
+          {% endif %}
         </div>
-    </div>
+  
+        <!-- Produce Column -->
+        <div class="col-md-4 mb-4">
+          <i class="fas fa-carrot text-warning mb-2" style="font-size: 2.5rem;"></i>
+          <p class="text-muted">Use 500 points to get fresh produce from Duke Farm.</p>
+          {% if user_points.points >= 500 %}
+            <form action="{% url 'points:redeem_produce' %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning btn-lg">
+                <i class="fas fa-carrot me-2"></i> Get Fresh Produce (500 pts)
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-outline-secondary btn-lg" disabled>
+              <i class="fas fa-lock me-2"></i> Need 500 pts
+            </button>
+          {% endif %}
+        </div>
+  
+        <!-- Tree Column -->
+        <div class="col-md-4 mb-4">
+          <i class="fas fa-tree mb-2" style="font-size: 2.5rem; color: #8B4513;"></i>
+          <p class="text-muted">Use 1000 points to plant a tree in Duke Forest.</p>
+          {% if user_points.points >= 1000 %}
+            <form action="{% url 'points:redeem_tree' %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-lg" style="background-color: #8B4513; color: white;">
+                <i class="fas fa-tree me-2"></i> Plant a Tree (1000 pts)
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-outline-secondary btn-lg" disabled>
+              <i class="fas fa-lock me-2"></i> Need 1000 pts
+            </button>
+          {% endif %}
+        </div>
+  
+      </div><!-- /.row -->
+    </div><!-- /.card-body -->
+  </div><!-- /.card -->
 
     <!-- Transaction History -->
     <div class="card shadow-sm border-0 mt-4">
