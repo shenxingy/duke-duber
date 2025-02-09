@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-5">
     <div class="text-center mb-5">
-        <h1 class="display-4 mb-3">Welcome to Duber!</h1>
+        <h1 class="display-4 mb-3" id="welcome-text"></h1>
         {% if user.is_authenticated %}
             <p class="lead text-muted mb-5">Welcome back, {{ user.username }}</p>
             
@@ -53,6 +53,29 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const text = "Welcome to Duber!";
+    const welcomeText = document.getElementById('welcome-text');
+    let index = 0;
+    
+    function typeEffect() {
+        if (index < text.length) {
+            welcomeText.textContent = text.substring(0, index + 1);
+            index++;
+            setTimeout(typeEffect, 100);
+        } else {
+            // 添加闪烁的光标效果
+            const cursor = document.createElement('span');
+            cursor.className = 'typing-cursor';
+            welcomeText.appendChild(cursor);
+        }
+    }
+    
+    typeEffect();
+});
+</script>
 
 <style>
     .hover-card {
