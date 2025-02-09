@@ -4,25 +4,34 @@
 ### **About**  
 Duke Duber is a ride-sharing web app built with the **Django** framework, allowing users to **request, share, or offer rides** while contributing to a greener campus. Our goal is to reduce **CO₂ emissions**, ease **traffic congestion**, and support **reforestation efforts** in Duke Forest.  
 
-### **To do list**
-- Real time location: 
-- Calculate the carbon emission that is reduced by the ride:
-  在创建新的 Ride 时，除了调用 Google API 预估行程时间（ETA）外，还能额外获取起点到终点的距离，同时保证原有的预估时间功能不受影响。
-一种实现方式是：
-新建或修改一个函数（例如 get_estimated_info），利用 Google Distance Matrix API 一次性获取时长与距离信息。
-修改 get_eta 的 API 接口，在返回 JSON 数据时，除了返回“estimated_time”，再加上一个“estimated_distance”的字段。
-前端 JS 部分也可以选择性地显示距离信息，但若没有使用这项新功能，原有流程依然能正常获得时长。
-- token system:
-目标是新增一种代币“叶绿素”，分发规则如下：
-• 每笔 ride 完成后，司机获得的叶绿素数量 = 里程数 × 2
-• 拼单发起者（ride 的创建者）以及所有参与拼单的乘客（RideShare 中的 rider）各自获得的叶绿素数量 = 里程数
-同时，这个“叶绿素”余额需要在网站导航栏中用户的下拉菜单中显示，具体位置要求是在“Edit Profile”和“Change Password”下面、“Logout”上面。
-要求是新增的功能和界面元素不改变现有的页面设计和功能。
-为了实现这一需求，可以考虑以下几点改动：
-用户数据扩展
-• 为了记录每个用户的叶绿素余额，可以扩展用户模型（例如通过 OneToOneField 将一个 Profile 模型与 User 关联）并添加一个字段，比如 token_balance 或 leaf_tokens。
-- reward system: Add succulent (duke garden) tree seed (duke forest) and vegtables and fruits (duke farm) figure on the page.
-- Carmax API
+### **To Do List**
+
+- **Real-time location**  
+  - **Calculate the carbon emission reduced by the ride**  
+    - When creating a new Ride, in addition to calling the Google API to estimate travel time (ETA), also retrieve the distance from the starting point to the destination, ensuring that the original time estimation feature remains unaffected.  
+    - One way to implement this:  
+      - Create or modify a function (for example, `get_estimated_info`) that uses the Google Distance Matrix API to retrieve both duration and distance information in a single call.  
+      - Modify the `get_eta` API endpoint so that when it returns JSON data, in addition to `estimated_time`, it also includes an `estimated_distance` field.  
+    - The front-end JS can optionally display the distance information, but if this new feature is not used, the existing process can still successfully retrieve the estimated time.
+
+- **Token system**  
+  - The goal is to introduce a new token called “Chlorophyll,” with the following distribution rules:  
+    - The driver, the ride initiator (the creator of the ride), and all passengers who join the ride (`rider` in `RideShare`) each receive an amount of “Chlorophyll” = distance * coefficient.
+  - The balance of this “Chlorophyll” token should be displayed in the user’s drop-down menu in the navigation bar:  
+    - Display location: under “Edit Profile” and “Change Password,” above “Logout.”  
+    - Requirement: New features and interface elements should not alter the existing page design and functionality.  
+  - To implement this requirement, the following changes are needed:  
+    - **Extend user data**: You can extend the user model (for example, by linking a `Profile` model to the `User` via a `OneToOneField`), adding a field (such as `token_balance` or `leaf_tokens`) to record the balance of “Chlorophyll.”
+
+- **Reward system**  
+  - Add redeemable items to the page:  
+    - Succulent (Duke Garden)  
+    - Tree seed (Duke Forest)  
+    - Vegetables and fruits (Duke Farm)
+
+- **The Ride-share System**
+
+
 
 ### **Key Features**  
 - **Driver & Rider Roles**: Users can register as **drivers** to offer rides or as **riders** to request/share a ride.  
