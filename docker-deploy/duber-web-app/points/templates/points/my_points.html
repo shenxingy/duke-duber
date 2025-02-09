@@ -25,6 +25,26 @@
         </div>
     </div>
 
+    <!-- 额外增加的里程与碳减排展示卡片 -->
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body text-center">
+            <h4 class="text-primary">
+                <i class="fas fa-road me-2 text-info"></i> Your Estimated Mileage
+            </h4>
+            <h5 class="fw-bold">{{ total_miles|floatformat:2 }} miles</h5>
+            
+            <hr>
+
+            <h4 class="text-success">
+                <i class="fas fa-globe-americas me-2"></i> Carbon Emissions Saved
+            </h4>
+            <p class="fw-bold mb-0">
+                {{ carbon_saved_kg|floatformat:2 }} kg of CO₂
+            </p>
+            <p class="text-muted small mb-0">* Approximate estimate based on average emissions per mile.</p>
+        </div>
+    </div>
+
     <!-- Trees You Planted -->
     {% if trees_planted > 0 %}
     <div class="card shadow-sm border-0 mt-4">
@@ -77,14 +97,23 @@
                                 <strong>{{ transaction.timestamp|date:"M d, Y H:i" }}</strong>
                                 <br>
                                 {% if transaction.transaction_type == "earn" %}
-                                    <span class="text-success"><i class="fas fa-plus-circle"></i> Earned</span>
+                                    <span class="text-success">
+                                        <i class="fas fa-plus-circle"></i> Earned
+                                    </span>
                                 {% elif transaction.transaction_type == "redeem" %}
-                                    <span class="text-warning"><i class="fas fa-tree"></i> Planted a Tree</span>
+                                    <span class="text-warning">
+                                        <i class="fas fa-tree"></i> Planted a Tree
+                                    </span>
                                 {% else %}
-                                    <span class="text-danger"><i class="fas fa-minus-circle"></i> Redeemed</span>
+                                    <span class="text-danger">
+                                        <i class="fas fa-minus-circle"></i> Redeemed
+                                    </span>
                                 {% endif %}
                             </div>
-                            <span class="fw-bold {% if transaction.transaction_type == 'earn' %}text-success{% elif transaction.transaction_type == 'redeem' %}text-warning{% else %}text-danger{% endif %}">
+                            <span class="fw-bold 
+                                {% if transaction.transaction_type == 'earn' %}text-success
+                                {% elif transaction.transaction_type == 'redeem' %}text-warning
+                                {% else %}text-danger{% endif %}">
                                 {{ transaction.points }} pts
                             </span>
                         </li>
