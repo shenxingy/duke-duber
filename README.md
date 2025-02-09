@@ -1,6 +1,8 @@
 # Duke Duber 🌿🚗  
 **Sustainable Ride Sharing for the Duke Community**  
 
+[Visit the site](http://ece568-first.colab.duke.edu:8000/)
+
 ### **About**  
 Duke Duber is a ride-sharing web app built with the **Django** framework, allowing users to **request, share, or offer rides** while contributing to a greener campus. Our goal is to reduce **CO₂ emissions**, ease **traffic congestion**, and support **reforestation efforts** in Duke Forest.  
 ![alt text](<home-page.png>)
