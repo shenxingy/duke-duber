@@ -189,7 +189,7 @@ def finish_ride(request, ride_id):
 
             sharer_user_points, _ = UserPoints.objects.get_or_create(user=share.rider)
             sharer_user_points.points += sharer_points
-            rider_points_obj.total_points_earned += base_points
+            sharer_user_points.total_points_earned += base_points
             sharer_user_points.save()
 
             PointsTransaction.objects.create(user=share.rider, ride=ride, points=sharer_points, transaction_type='earn')
