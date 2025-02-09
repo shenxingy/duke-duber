@@ -15,11 +15,30 @@ class PointsTransaction(models.Model):
         ('earn', 'Earned'),
         ('redeem', 'Redeemed'),
     )
+    
+    # For "redeem", specify which item (tree, succulent, produce, etc.)
+    REDEEM_ITEMS = (
+        ('tree', 'Tree'),
+        ('succulent', 'Succulent'),
+        ('produce', 'Produce'),
+        # Add more if needed
+    )
+
+
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ride = models.ForeignKey(Ride, on_delete=models.SET_NULL, null=True, blank=True)
     points = models.IntegerField()
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE)
+    
+    # New field:
+    redemption_item = models.CharField(
+        max_length=20, 
+        choices=REDEEM_ITEMS, 
+        null=True, blank=True,
+        help_text="Specifies which item was redeemed if transaction_type='redeem'."
+    )
+
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
