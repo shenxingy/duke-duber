@@ -7,7 +7,7 @@ from points.models import UserPoints, PointsTransaction
 def award_points(sender, instance, created, **kwargs):
     if not created and instance.status == 'COMPLETED':  # Order completed
         distance = instance.distance
-        base_points = int(distance * 10)  # 10 points per mile
+        base_points = int(distance * 1000)  # 10 points per mile
 
         # ✅ Give tokens to the main ride requester (rider)
         if instance.rider:

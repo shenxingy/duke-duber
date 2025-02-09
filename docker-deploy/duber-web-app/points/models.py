@@ -5,6 +5,7 @@ from rider.models import Ride  # Assuming your ride model is in ride/models.py
 class UserPoints(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
+    total_points_earned = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.username} - {self.points} Points"
