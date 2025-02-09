@@ -3,7 +3,7 @@
 
 ### **About**  
 Duke Duber is a ride-sharing web app built with the **Django** framework, allowing users to **request, share, or offer rides** while contributing to a greener campus. Our goal is to reduce **CO₂ emissions**, ease **traffic congestion**, and support **reforestation efforts** in Duke Forest.  
-
+![alt text](<Screenshot 2025-02-09 at 12.07.35 PM.png>)
 ### **To Do List**
 
 - **Real-time location**  
