@@ -24,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9teawuq_u6!@l$5-70dhqou%_@_i91g+-k8#lrt^qh#-elu7@z'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-9teawuq_u6!@l$5-70dhqou%_@_i91g+-k8#lrt^qh#-elu7@z')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'alex-main.colab.duke.edu', 'web', 'vcm-45083.vm.duke.edu', '0.0.0.0']
 
@@ -95,11 +95,11 @@ WSGI_APPLICATION = 'duke_duber.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432,
+        'NAME': os.getenv('POSTGRES_DB', 'postgres'),
+        'USER': os.getenv('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': os.getenv('POSTGRES_HOST', 'db'),
+        'PORT': int(os.getenv('POSTGRES_PORT', '5432')),
         'OPTIONS': {
             'connect_timeout': 5,
         }
@@ -164,19 +164,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_TIMEOUT = 20  # 添加超时设置
 
-# Add debug info
-print("Email Configuration:")
-print(f"EMAIL_HOST_USER: {EMAIL_HOST_USER}")
-print(f"EMAIL_HOST: {EMAIL_HOST}")
-print(f"EMAIL_PORT: {EMAIL_PORT}")
-print(f"EMAIL_USE_TLS: {EMAIL_USE_TLS}")
-print(f"EMAIL_HOST_PASSWORD length: {len(EMAIL_HOST_PASSWORD) if EMAIL_HOST_PASSWORD else 0}")
-
-# 在现有的调试信息之后添加
-print(f"Email backend: {EMAIL_BACKEND}")
-print(f"Default from email: {DEFAULT_FROM_EMAIL}")
-
-# 在现有配置后添加
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

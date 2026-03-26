@@ -1,37 +1,19 @@
-import os
 import json
-import pytz
 import requests
-from datetime import datetime
 from django.db.models import Q
 from django.conf import settings
 from django.utils.timezone import now
-from datetime import timedelta
 from django.views.generic.detail import DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin  # Add this import
-
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from dotenv import load_dotenv
 from .forms import RideRequestForm, JoinRideForm
 from .models import Ride, RideShare
 
-# Load environment variables
-load_dotenv()
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
-
-def get_estimated_time(pickup, dropoff):
-    """Fetch estimated time using Google Maps Distance Matrix API."""
-    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={pickup}&destinations={dropoff}&key={GOOGLE_MAPS_API_KEY}"
-    response = requests.get(url)
-    result = response.json()
-    if result.get("status") == "OK":
-        return result["rows"][0]["elements"][0]["duration"]["text"]
-    return "Unknown ETA"
+GOOGLE_MAPS_API_KEY = settings.GOOGLE_MAPS_API_KEY
 
 def get_estimated_info(pickup, dropoff):
     """Fetch estimated time and distance using Google Maps Distance Matrix API."""
@@ -137,8 +119,8 @@ def get_eta(request):
                 "estimated_time": estimated_info["duration_text"],
                 "estimated_distance": estimated_info["distance_text"],
             })
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
+        except Exception:
+            return JsonResponse({"success": False, "error": "Internal server error."}, status=500)
     return JsonResponse({"success": False, "error": "Invalid method."}, status=405)
 
 @login_required

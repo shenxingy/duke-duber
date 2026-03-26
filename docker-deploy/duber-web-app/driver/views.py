@@ -3,23 +3,13 @@ from django.contrib.auth.decorators import login_required
 from .models import Driver
 from .forms import VehicleRegistrationForm, VehicleUpdateForm
 from django.contrib import messages
-from rider.models import Ride
-from django.core.mail import send_mail
 from django.conf import settings
-from django.core.mail import get_connection
-import socket
 from utils.gmail_service import send_email
 from django.views.generic.detail import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 import logging
 import requests
-import os
-from dotenv import load_dotenv
 from rider.models import Ride, RideShare
-
-# Load environment variables
-load_dotenv()
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 logger = logging.getLogger(__name__)
 def fetch_distance_from_google_maps(pickup, dropoff):
@@ -130,10 +120,10 @@ def accept_ride(request, ride_id):
             return redirect('driver_dashboard')
         # else:
             # messages.error(request, 'Your vehicle cannot accommodate this many passengers.')
-    except Exception as e:
-        print(f"Unexpected error in accept_ride: {str(e)}")
+    except Exception:
+        logger.exception("Unexpected error in accept_ride")
         # messages.error(request, 'An error occurred while processing your request.')
-    
+
     return redirect('driver_dashboard')
 
 from points.models import UserPoints, PointsTransaction
@@ -197,8 +187,8 @@ def finish_ride(request, ride_id):
         messages.success(request, f'Ride completed! Tokens awarded based on {ride.distance} miles.')
 
     except Driver.DoesNotExist:
-        print("vehicle not found")
-    
+        logger.warning("Driver profile not found in finish_ride for user %s", request.user)
+
     return redirect('driver_dashboard')
 
 @login_required
