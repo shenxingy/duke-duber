@@ -1,48 +1,131 @@
-# Duke Duber 🌿🚗  
-**Sustainable Ride Sharing for the Duke Community**  
+# Duke Duber
 
-[Visit the site](http://alex-main.colab.duke.edu:8000/)
+**Sustainable Ride Sharing for the Duke Community**
 
-### **About**  
-Duke Duber is a ride-sharing web app built with the **Django** framework, allowing users to **request, share, or offer rides** while contributing to a greener campus. Our goal is to reduce **CO₂ emissions**, ease **traffic congestion**, and support **reforestation efforts** in Duke Forest.  
-![alt text](<home-page.png>)
-### **To Do List**
+Duke Duber is a ride-sharing web application built with Django, allowing Duke community members to request, share, or offer rides while contributing to a greener campus. Every shared ride reduces CO2 emissions, eases traffic congestion, and earns **Green Coins (Chlorophyll)** toward reforestation in Duke Forest.
 
-- **Real-time location**  
-  - **Calculate the carbon emission reduced by the ride**  
-    - When creating a new Ride, in addition to calling the Google API to estimate travel time (ETA), also retrieve the distance from the starting point to the destination, ensuring that the original time estimation feature remains unaffected.  
-    - One way to implement this:  
-      - Create or modify a function (for example, `get_estimated_info`) that uses the Google Distance Matrix API to retrieve both duration and distance information in a single call.  
-      - Modify the `get_eta` API endpoint so that when it returns JSON data, in addition to `estimated_time`, it also includes an `estimated_distance` field.  
-    - The front-end JS can optionally display the distance information, but if this new feature is not used, the existing process can still successfully retrieve the estimated time.
+![Duke Duber Home Page](home-page.png)
 
-- **Token system**  
-  - The goal is to introduce a new token called “Chlorophyll,” with the following distribution rules:  
-    - The driver, the ride initiator (the creator of the ride), and all passengers who join the ride (`rider` in `RideShare`) each receive an amount of “Chlorophyll” = distance * coefficient.
-  - The balance of this “Chlorophyll” token should be displayed in the user’s drop-down menu in the navigation bar:  
-    - Display location: under “Edit Profile” and “Change Password,” above “Logout.”  
-    - Requirement: New features and interface elements should not alter the existing page design and functionality.  
-  - To implement this requirement, the following changes are needed:  
-    - **Extend user data**: You can extend the user model (for example, by linking a `Profile` model to the `User` via a `OneToOneField`), adding a field (such as `token_balance` or `leaf_tokens`) to record the balance of “Chlorophyll.”
+## Features
 
-- **Reward system**  
-  - Add redeemable items to the page:  
-    - Succulent (Duke Garden)  
-    - Tree seed (Duke Forest)  
-    - Vegetables and fruits (Duke Farm)
+- **Driver & Rider Roles** — Register as a driver to offer rides, or as a rider to request or share one.
+- **Ride Sharing** — Riders can search for and join existing rides headed in their direction.
+- **Route Optimization** — Google Maps Directions API optimizes shared-ride pickup/drop-off order.
+- **Green Coins (Chlorophyll)** — Earn points based on miles traveled; redeem for succulents, seeds, or produce from Duke campus.
+- **Email Notifications** — Riders receive an email confirmation when a driver accepts their ride.
+- **Dark Mode** — System-aware dark/light theme toggle.
 
-- **The Ride-share System**
+## Tech Stack
 
+- **Backend**: Django 5.1, PostgreSQL
+- **Frontend**: Bootstrap 5, SweetAlert2
+- **APIs**: Google Maps Distance Matrix & Directions API, Gmail API
+- **Infrastructure**: Docker, Docker Compose, Nginx
 
+## Prerequisites
 
-### **Key Features**  
-- **Driver & Rider Roles**: Users can register as **drivers** to offer rides or as **riders** to request/share a ride.  
-- **Sustainability Rewards**: Earn **Green Coins (Chlorophyll)** for using the service and help plant trees in Duke Forest.  
-- **Community Impact**: Reduce campus traffic, promote ride-sharing, and contribute to wildlife preservation.  
-- **Django-Powered Web App**: A robust and scalable system using the Django web framework.  
+- Docker and Docker Compose
+- A `.env` file (see below)
+- Google Maps API key
+- Gmail OAuth2 credentials (`credentials.json` + `token.json`) for email notifications
 
-### **Why Duke Duber?**  
-- 🌱 **Lower Carbon Footprint**: Every shared ride reduces CO₂ emissions.  
-- 🚘 **Less Traffic Congestion**: Fewer cars on the road mean a smoother commute.  
-- 🌳 **Support Duke Forest**: Earn **Green Coins** and contribute to reforestation efforts.  
+## Setup
 
+### 1. Clone the repository
+
+```bash
+git clone <repo-url>
+cd duke-duber
+```
+
+### 2. Create a `.env` file
+
+Create `docker-deploy/duber-web-app/.env` with the following variables:
+
+```env
+DJANGO_SECRET_KEY=your-secret-key-here
+DJANGO_DEBUG=False
+
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your-db-password
+
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+
+EMAIL_HOST_USER=your-gmail@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+```
+
+> For email to work, generate an [App Password](https://support.google.com/accounts/answer/185833) from your Google account, or set up OAuth2 credentials.
+
+### 3. (Optional) Set up Gmail OAuth2
+
+If using the Gmail API for email notifications:
+1. Download `credentials.json` from Google Cloud Console (OAuth2 client)
+2. Place it in `docker-deploy/duber-web-app/`
+3. Run `python gmail_token.py` once locally to generate `token.json`
+4. Copy `token.json` into the same directory
+
+### 4. Start the application
+
+```bash
+cd docker-deploy
+docker-compose up --build
+```
+
+The app will be available at [http://localhost:8000](http://localhost:8000).
+
+### 5. Stopping the application
+
+```bash
+docker-compose down
+```
+
+To also remove the database volume:
+
+```bash
+docker-compose down -v
+```
+
+## Project Structure
+
+```
+docker-deploy/
+  duber-web-app/
+    accounts/       # User registration, login, profile
+    rider/          # Ride requests, sharing, dashboard
+    driver/         # Driver registration, ride acceptance
+    points/         # Green Coins system, redemption
+    utils/          # Gmail API helper
+    duke_duber/     # Django project settings and URLs
+    templates/      # Base HTML templates
+    static/         # Static assets (CSS, images)
+  nginx/            # Nginx reverse proxy config
+  docker-compose.yml
+```
+
+## Green Coins System
+
+| Action | Reward |
+|--------|--------|
+| Complete a ride (driver) | Distance × 1000 pts |
+| Complete a ride (rider) | Distance × 1000 pts |
+| Complete a shared ride (sharer) | Segment distance × 1000 pts |
+
+**Redemption options:**
+- 300 pts — Succulent (Duke Garden)
+- 500 pts — Vegetables & fruits (Duke Farm)
+- 1000 pts — Tree seed (Duke Forest)
+
+## Environment Variables Reference
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DJANGO_SECRET_KEY` | Django secret key | insecure dev key |
+| `DJANGO_DEBUG` | Enable debug mode | `True` |
+| `POSTGRES_DB` | Database name | `postgres` |
+| `POSTGRES_USER` | Database user | `postgres` |
+| `POSTGRES_PASSWORD` | Database password | `postgres` |
+| `GOOGLE_MAPS_API_KEY` | Google Maps API key | — |
+| `EMAIL_HOST_USER` | Gmail address | — |
+| `EMAIL_HOST_PASSWORD` | Gmail app password | — |
